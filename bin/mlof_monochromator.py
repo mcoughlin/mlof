@@ -68,15 +68,38 @@ class Monochromater:
         else:
             pass
 
-    def getgrat(self):
+    def askgrat(self):
         if self.status != "not connected":
             m = self.serial
             cmd = 'GRAT?\r\n'
             m.write(cmd.encode())
             r = m.read(200)
-            # print r
-            r = r[4]
-            result = string.strip(r)
+            r = r.decode().strip('\n').split('\r')[1]
+            result = r.strip()
+            return result
+        else:
+            pass
+
+    def monoshutter(self, shutter):
+        if self.status != "not connected":
+            m = self.serial
+            if shutter not in ['O', 'C']:
+                raise
+            cmd = 'SHUTTER %s\r\n' % shutter
+            m.write(cmd.encode())
+            m.read()
+            return
+        else:
+            pass
+
+    def askshutter(self):
+        if self.status != "not connected":
+            m = self.serial
+            cmd = 'SHUTTER?\r\n'
+            m.write(cmd.encode())
+            r = m.read(200)
+            r = r.decode().strip('\n').split('\r')[1]
+            result = r.strip()
             return result
         else:
             pass
@@ -232,25 +255,22 @@ class Monochromater:
     def monograting(self, val):
         if self.status != "not connected":
             self.gograt(val)
-            grat = self.getgrat()
+            grat = self.askgrat()
         else:
             pass
 
     def get_mono(self):
         if self.status != "not connected":
             wave = self.askwave()
-            filter = self.askfilter()
+            grating = self.askgrat()
+            shutter = self.askshutter()
             try:
                 wave = float(wave)
             except:
                 wave = -1
-            try:
-                filter = float(filter)
-            except:
-                filter = -1
 
-            print(wave, filter)
-            return wave, filter
+            print(wave, grating, shutter)
+            return wave, grating, shutter
         else:
             pass
 
@@ -263,10 +283,12 @@ def parse_commandline():
 
     parser.add_option("-w", "--wavelength", default=600, type=int)
     parser.add_option("-f", "--filter", default=1, type=int)
-    parser.add_option("-g", "--grating", default=3, type=int)
+    parser.add_option("-g", "--grating", default=1, type=int)
+    parser.add_option("-s", "--shutter", default='O', type=str)
     parser.add_option("--doMonoWavelength", action="store_true", default=False)
     parser.add_option("--doMonoFilter", action="store_true", default=False)
     parser.add_option("--doMonoGrating", action="store_true", default=False)
+    parser.add_option("--doMonoShutter", action="store_true", default=False)
     parser.add_option("--doGetMono", action="store_true", default=False)
     parser.add_option("-v", "--verbose", action="store_true", default=False)
 
@@ -284,9 +306,10 @@ def main(runtype="wavelength", val=1000):
         monochromater.monofilter(val)
     elif runtype == "monograting":
         monochromater.monograting(val)
-
     elif runtype == "getmono":
         return monochromater.get_mono()
+    elif runtype == "monoshutter":
+        monochromater.monoshutter(val)
 
 
 if __name__ == "__main__":
@@ -302,3 +325,5 @@ if __name__ == "__main__":
         main(runtype="getmono")
     if opts.doMonoGrating:
         main(runtype="monograting", val=opts.grating)
+    if opts.doMonoShutter:
+        main(runtype="monoshutter", val=opts.shutter)
