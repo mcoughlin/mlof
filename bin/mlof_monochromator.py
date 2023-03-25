@@ -317,8 +317,6 @@ if __name__ == "__main__":
     # Parse command line
     opts = parse_commandline()
 
-    if opts.doMonoWavelength:
-        main(runtype="monowavelength", val=opts.wavelength)
     if opts.doMonoFilter:
         main(runtype="monofilter", val=opts.filter)
     if opts.doGetMono:
@@ -327,3 +325,5 @@ if __name__ == "__main__":
         main(runtype="monograting", val=opts.grating)
     if opts.doMonoShutter:
         main(runtype="monoshutter", val=opts.shutter)
+    if opts.doMonoWavelength:
+        main(runtype="monowavelength", val=opts.wavelength)

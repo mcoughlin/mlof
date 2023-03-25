@@ -148,7 +148,7 @@ if __name__ == "__main__":
     filename = args.output_file.replace(".fits","") 
 
     outdir = "/".join(args.output_file.split("/")[:-1])
-    if not os.path.isdir(outdir):
+    if not outdir == "" and not os.path.isdir(outdir):
         os.makedirs(outdir)
 
     t0 = Time.now() 
