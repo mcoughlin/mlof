@@ -18,9 +18,9 @@ import optparse
 
 
 class Monochromater:
-    def __init__(self):
+    def __init__(self, port_name="/dev/ttyUSB0"):
         self.status = None
-        self.serial = self.open_instance(port_name="/dev/ttyUSB0")
+        self.serial = self.open_instance(port_name=port_name)
 
     def open_instance(self,port_name='/dev/ttyUSB0'):
         """
@@ -285,6 +285,7 @@ def parse_commandline():
     parser.add_option("-f", "--filter", default=1, type=int)
     parser.add_option("-g", "--grating", default=1, type=int)
     parser.add_option("-s", "--shutter", default='O', type=str)
+    parser.add_option("-m", "--monochromator", default=1, type=int)
     parser.add_option("--doMonoWavelength", action="store_true", default=False)
     parser.add_option("--doMonoFilter", action="store_true", default=False)
     parser.add_option("--doMonoGrating", action="store_true", default=False)
@@ -297,8 +298,16 @@ def parse_commandline():
     return opts
 
 
-def main(runtype="wavelength", val=1000):
-    monochromater = Monochromater()
+def main(runtype="wavelength", val=1000, monochromator=1):
+
+    if monochromator==1:
+        port_name="/dev/ttyUSB0"
+    elif monochromator==2:
+        port_name="/dev/ttyUSB1"
+    else:
+        raise ValueError('monochromator must be 1 or 2')
+
+    monochromater = Monochromater(port_name=port_name)
 
     if runtype == "monowavelength":
         monochromater.monowavelength(val)
@@ -318,12 +327,12 @@ if __name__ == "__main__":
     opts = parse_commandline()
 
     if opts.doMonoFilter:
-        main(runtype="monofilter", val=opts.filter)
+        main(runtype="monofilter", val=opts.filter, monochromator=opts.monochromator)
     if opts.doGetMono:
-        main(runtype="getmono")
+        main(runtype="getmono", monochromator=opts.monochromator)
     if opts.doMonoGrating:
-        main(runtype="monograting", val=opts.grating)
+        main(runtype="monograting", val=opts.grating, monochromator=opts.monochromator)
     if opts.doMonoShutter:
-        main(runtype="monoshutter", val=opts.shutter)
+        main(runtype="monoshutter", val=opts.shutter, monochromator=opts.monochromator)
     if opts.doMonoWavelength:
-        main(runtype="monowavelength", val=opts.wavelength)
+        main(runtype="monowavelength", val=opts.wavelength, monochromator=opts.monochromator)
